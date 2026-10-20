@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Epic Games, Inc.
+// SPDX-FileCopyrightText: 2026 Murad
 // SPDX-License-Identifier: MIT
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -2545,19 +2546,18 @@ fn resolve_revision_user_ids(
     let auth_data: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::default()));
 
     let auth_data_clone = auth_data.clone();
-    // Sub-operation callback; safe to ignore error events.
-    let callback =
-        output_formatter().unwrap_or(Some(Box::new(move |event: &LoreEvent| match event {
-            LoreEvent::AuthUserInfo(data) => {
-                auth_data_clone
-                    .lock()
-                    .insert(data.id.to_string(), data.name.to_string());
-            }
-            LoreEvent::Maintenance(data) => {
-                util::handle_maintenance_event(data);
-            }
-            _ => (),
-        })));
+    // Keep this sub-operation's events out of the command's JSON output.
+    let callback: LoreEventCallback = Some(Box::new(move |event: &LoreEvent| match event {
+        LoreEvent::AuthUserInfo(data) => {
+            auth_data_clone
+                .lock()
+                .insert(data.id.to_string(), data.name.to_string());
+        }
+        LoreEvent::Maintenance(data) => {
+            util::handle_maintenance_event(data);
+        }
+        _ => (),
+    }));
 
     let result = run_command(globals, auth_args.into(), callback) as u8;
 

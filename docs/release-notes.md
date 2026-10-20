@@ -71,6 +71,8 @@ Release notes for the open source Lore project. Releases before v0.8.4 predate t
 
 ### Fixes & Improvements
 
+- Revision history, info, commit and amend with `--json` no longer emit an extra completion event from the internal
+  username lookup
 - Working tree: `lore sync --reset` replaces a directory with a file at the same path instead of failing with "Is a
   directory". Syncs, branch switches, resets, merges and view changes send `LORE_EVENT_REVISION_SYNC_FILE` for each
   deleted file and directory, so callers tracking the working tree, such as editors, no longer keep deleted paths. Files
